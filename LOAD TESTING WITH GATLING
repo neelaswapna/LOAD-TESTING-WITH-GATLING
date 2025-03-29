@@ -1,0 +1,24 @@
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import scala.concurrent.duration._
+
+class LoadTest extends Simulation {
+
+  val httpProtocol = http
+    .baseUrl("http://example.com") // Replace with your web app URL
+    .acceptHeader("application/json")
+
+  val scn = scenario("Heavy Load Simulation")
+    .exec(http("Home Page Request")
+      .get("/")
+      .check(status.is(200)))
+    .pause(1)
+    .exec(http("Login Request")
+      .post("/login")
+      .formParam("username", "testUser")
+      .formParam("password", "testPass")
+      .check(status.is(200)))
+    .pause(2)
+
+  setUp(scn.inject(rampUsers(1000).during(60.seconds))).protocols(httpProtocol)
+}
